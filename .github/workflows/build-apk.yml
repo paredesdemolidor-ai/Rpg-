@@ -1,0 +1,64 @@
+name: Gerar APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Preparar arquivos do jogo
+        run: |
+          npm install
+          mkdir www
+          cp index.html style.css game.js grimorio.js espiritos.js racas.js economia.js monstros.js mar.js visuais.js menu.js interface.js multi.js multisync.js www/
+          cp node_modules/three/build/three.min.js www/three.min.js
+          sed -i 's#https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js#three.min.js#' www/index.html
+
+      - name: Criar projeto Android
+        run: |
+          npx cap add android
+          python3 - <<'PY'
+          import re
+          p='android/app/src/main/AndroidManifest.xml'
+          s=open(p,encoding='utf-8').read()
+          perms=['android.permission.INTERNET','android.permission.ACCESS_NETWORK_STATE','android.permission.ACCESS_WIFI_STATE','android.permission.RECORD_AUDIO','android.permission.MODIFY_AUDIO_SETTINGS']
+          add=''.join('<uses-permission android:name="%s" />\n'%x for x in perms if x not in s)
+          s=s.replace('</manifest>',add+'</manifest>')
+          s=re.sub(r'<activity ','<activity android:screenOrientation="sensorLandscape" ',s,count=1)
+          open(p,'w',encoding='utf-8').write(s)
+          PY
+          npx cap sync android
+
+      - name: Compilar APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mundo-de-grimorios-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: APK mais recente
+          files: android/app/build/outputs/apk/debug/app-debug.apk
