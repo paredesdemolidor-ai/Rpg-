@@ -1,0 +1,8 @@
+{
+  "appId": "com.grimorios.rpg",
+  "appName": "Mundo de Grimórios",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
