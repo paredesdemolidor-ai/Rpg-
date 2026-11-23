@@ -48,19 +48,21 @@ NETP.forEach(n=>{const x=55+(n.x-pl.position.x)*.4,y=55+(n.z-pl.position.z)*.4;i
 
 /* ---------- personalização do HUD ---------- */
 const HID=['bars','mm','clk','qst','tb'],HK={bars:'Barras de status',mm:'Minimapa',clk:'Relógio',qst:'Missões',tb:'Menu lateral'};
-let HU={hs:1,ho:1,bh:9,acc:'#8a6a35',off:{},pos:{}};
+let HU={hs:1,ho:1,bh:14,acc:'#8a6a35',off:{},pos:{}};
 try{Object.assign(HU,JSON.parse(localStorage.getItem('rpg_hud'))||{})}catch(e){}
 const hudSave=()=>{try{localStorage.setItem('rpg_hud',JSON.stringify(HU))}catch(e){}};
 function hudApply(){const s=document.documentElement.style;s.setProperty('--hs',HU.hs);s.setProperty('--ho',HU.ho);s.setProperty('--bh',HU.bh+'px');s.setProperty('--acc',HU.acc);
 HID.forEach(id=>{document.body.classList.toggle('h-'+id,!!HU.off[id]);const e=$(id),p=HU.pos[id];if(!e)return;if(p){e.style.right=e.style.bottom='auto';e.style.left=p[0];e.style.top=p[1]}else e.style.left=e.style.top=e.style.right=e.style.bottom=''})}
 const hp=document.createElement('div');hp.id='hudp';hp.className='panel hide';hp.style.zIndex=22;
-hp.innerHTML='<h3>Personalizar HUD</h3><label>Tamanho <input type="range" id="hhs" min=".7" max="1.5" step=".05"></label><label>Opacidade <input type="range" id="hho" min=".3" max="1" step=".05"></label><label>Espessura das barras <input type="range" id="hbh" min="6" max="16" step="1"></label><label>Cor de destaque <input type="color" id="hacc"></label>'+HID.map(i=>'<label><span>'+HK[i]+'</span><input type="checkbox" id="hv_'+i+'"></label>').join('')+'<label><span>Mover elementos na tela</span><input type="checkbox" id="hedit"></label><button id="hreset">Restaurar padrão</button><button id="hclose">Fechar</button>';
+hp.innerHTML='<h3>Personalizar HUD</h3><label>Tamanho <input type="range" id="hhs" min=".7" max="1.5" step=".05"></label><label>Opacidade <input type="range" id="hho" min=".3" max="1" step=".05"></label><label>Espessura das barras <input type="range" id="hbh" min="8" max="22" step="1"></label><label>Cor de destaque <input type="color" id="hacc"></label>'+HID.map(i=>'<label><span>'+HK[i]+'</span><input type="checkbox" id="hv_'+i+'"></label>').join('')+'<label><span>Mover elementos na tela</span><input type="checkbox" id="hedit"></label><button id="hreset">Restaurar padrão</button><button id="hclose">Fechar</button>';
 document.body.appendChild(hp);
 function hudFields(){$('hhs').value=HU.hs;$('hho').value=HU.ho;$('hbh').value=HU.bh;$('hacc').value=HU.acc;HID.forEach(i=>$('hv_'+i).checked=!HU.off[i])}
 hp.addEventListener('input',e=>{HU.hs=+$('hhs').value;HU.ho=+$('hho').value;HU.bh=+$('hbh').value;HU.acc=$('hacc').value;HID.forEach(i=>HU.off[i]=!$('hv_'+i).checked);hudApply();hudSave()});
-$('hedit').onchange=e=>document.body.classList.toggle('hedit',e.target.checked);
-$('hreset').onclick=()=>{HU={hs:1,ho:1,bh:9,acc:'#8a6a35',off:{},pos:{}};hudApply();hudFields();hudSave()};
-$('hclose').onclick=()=>{hp.classList.add('hide');$('hedit').checked=false;document.body.classList.remove('hedit')};
+const hd=document.createElement('button');hd.id='hdone';hd.className='hide';hd.textContent='Concluir edição do HUD';document.body.appendChild(hd);
+const hEdit=on=>{document.body.classList.toggle('hedit',on);$('edit').checked=on;$('edit').dispatchEvent(new Event('change',{bubbles:true}));hp.classList.toggle('hide',on);hd.classList.toggle('hide',!on)};
+$('hedit').onchange=e=>hEdit(e.target.checked);hd.onclick=()=>{$('hedit').checked=false;hEdit(false);hudFields()};
+$('hreset').onclick=()=>{HU={hs:1,ho:1,bh:14,acc:'#8a6a35',off:{},pos:{}};hudApply();hudFields();hudSave()};
+$('hclose').onclick=()=>{$('hedit').checked=false;hEdit(false);hp.classList.add('hide')};
 const hb=document.createElement('button');hb.textContent='Personalizar HUD';hb.onclick=()=>{hudFields();hp.classList.remove('hide')};$('set').insertBefore(hb,$('sclose'));
 HID.forEach(id=>{const e=$(id);let d=null;
 e.addEventListener('pointerdown',ev=>{if(!document.body.classList.contains('hedit'))return;d={x:ev.clientX,y:ev.clientY,l:e.offsetLeft,t:e.offsetTop,id:ev.pointerId};e.setPointerCapture(ev.pointerId);ev.preventDefault()});
@@ -72,8 +74,26 @@ hudApply();
 const mg=document.createElement('div');mg.id='mgrid';mg.className='panel hide';mg.style.zIndex=21;document.body.appendChild(mg);
 function mgOpen(){mg.innerHTML='<h3>Menu</h3><div class="grid"></div><button id="mgx">Fechar</button>';const gd=mg.querySelector('.grid');
 const add=(t,f)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mg.classList.add('hide');f()};gd.appendChild(b)};
-add('Mapa',()=>mapOpen(true));
+add('Mapa',()=>mapOpen(true));add('Personalizar HUD',()=>{hudFields();hp.classList.remove('hide')});add('Configurações',()=>$('set').classList.remove('hide'));
 [...$('tb').children].filter(b=>b.id!='mbtn').forEach(b=>add(b.textContent=='☰'?'Pausa':b.textContent,()=>b.click()));
 mg.classList.remove('hide');$('mgx').onclick=()=>mg.classList.add('hide')}
 const mb=document.createElement('button');mb.id='mbtn';mb.textContent='Menu';mb.onclick=mgOpen;$('tb').insertBefore(mb,$('tb').firstChild);
 setInterval(()=>{if(G&&running)$('bM').style.visibility=G.grim?'visible':'hidden'},300);
+
+/* ---------- botão de visão ---------- */
+const vb=document.createElement('button');vb.id='vbtn';const vt=()=>vb.textContent='Visão: '+(CFG.third?'3ª pessoa':'1ª pessoa');vt();
+vb.onclick=()=>{CFG.third=!CFG.third;$('third').checked=CFG.third;vt();cfgSave()};$('tb').appendChild(vb);setInterval(vt,400);
+
+/* ---------- fechar painéis e esconder o HUD atrás deles ---------- */
+const gx=document.createElement('button');gx.id='gx';gx.textContent='✕ Fechar';gx.className='hide';document.body.appendChild(gx);
+const openP=()=>[...document.querySelectorAll('.panel:not(.hide)')];
+setInterval(()=>{const o=openP();document.body.classList.toggle('pop',o.length>0||!bm.classList.contains('hide'));gx.classList.toggle('hide',o.length==0)},150);
+gx.onclick=()=>{const o=openP().sort((a,b)=>(+getComputedStyle(a).zIndex||0)-(+getComputedStyle(b).zIndex||0)),p=o[o.length-1];if(!p)return;
+({pan:()=>panel(),set:()=>$('sclose').click(),info:()=>$('iclose').click(),hudp:()=>$('hclose').click(),mpp:()=>$('mpclose').click()}[p.id]||(()=>p.classList.add('hide')))()};
+
+/* ---------- animação de dano ---------- */
+const dmgEl=document.createElement('div'),lowEl=document.createElement('div');dmgEl.id='dmg';lowEl.id='lowv';document.body.appendChild(dmgEl);document.body.appendChild(lowEl);
+function flashDano(i){dmgEl.style.setProperty('--di',Math.min(1,.35+i));dmgEl.classList.remove('hit');void dmgEl.offsetWidth;dmgEl.classList.add('hit');
+cv.classList.remove('shake');void cv.offsetWidth;cv.classList.add('shake');if(navigator.vibrate)navigator.vibrate(40)}
+let lhp=100;(function dl(){requestAnimationFrame(dl);if(!(running&&G)){lhp=100;lowEl.classList.remove('on');return}
+const d=lhp-G.hp;if(d>.2)flashDano(Math.min(.6,d/25));lhp=G.hp;lowEl.classList.toggle('on',G.hp<25&&G.hp>0)})();
