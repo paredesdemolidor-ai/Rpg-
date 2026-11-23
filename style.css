@@ -90,3 +90,24 @@ textarea{font:12px monospace;color:inherit;background:#1b1610;border:1px solid #
 #bJ{right:26px;bottom:156px}
 #bM{right:112px;bottom:122px}
 #bS{right:196px;bottom:80px}
+
+/* ---- painéis rolam e fecham ---- */
+.panel{inset:50px 4% 4% 4%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.panel,.panel *,#menu,#menu *{touch-action:pan-y}
+#gx{position:fixed;top:8px;right:8px;z-index:60;padding:10px 16px;font-size:15px;background:#5a2a1a}
+body.pop #hud{visibility:hidden}
+#hdone{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:61;padding:12px 18px;background:#3a5a22}
+/* ---- HUD: barras com texto dentro, missões abaixo ---- */
+.b{position:relative;margin:2px 0;background:#0009;border-radius:5px;overflow:hidden;height:var(--bh,14px)!important}
+.b i{display:block;height:100%}
+.b span{position:absolute;left:5px;top:0;height:100%;display:flex;align-items:center;font-size:10px;text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap}
+#qst{top:160px}
+#tb #vbtn{display:block;padding:6px 10px;font-size:12px}
+/* ---- dano ---- */
+#dmg,#lowv{position:fixed;inset:0;pointer-events:none;z-index:35;opacity:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(190,0,0,.9) 100%)}
+#dmg.hit{animation:dmgHit .5s ease-out}
+@keyframes dmgHit{0%{opacity:var(--di,.6)}100%{opacity:0}}
+#lowv.on{animation:lowhp 1.3s ease-in-out infinite}
+@keyframes lowhp{0%,100%{opacity:0}50%{opacity:.45}}
+#c.shake{animation:shk .3s}
+@keyframes shk{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-2px)}}
